@@ -13,6 +13,7 @@ function App() {
   const [blueTotal, setBlueTotal] = useState(0);
   const [dateCompSetMatch, setDateCompSetMatch] = useState('');
   const [link, setLink] = useState();
+  const [mistake, setMistake] = useState(false);
   
 
   const handleChange = ({target}) => {
@@ -27,13 +28,19 @@ function App() {
   const getData = async () => {
     setIsEntered(true);
     try {
+      console.log(eventCode);
       const response = await fetch(`https://api.statbotics.io/v2/matches/event/${eventCode}`, {
       })
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
+      }
+      let fetchedData = await response.json();
+      if (fetchedData.length > 0) {
+        setData(fetchedData);
+        setMistake(false);
+        console.log(fetchedData);
       }else {
-        setData(await response.json());
-        console.log(data);
+        setMistake(true);
       }
     } catch(error) {
       console.log(error);
@@ -43,20 +50,17 @@ function App() {
   }
   
   useEffect (() => {
-    if (!isLoading) {
+    if (!isLoading && !mistake) {
       let temp = data[index];
       setLink(temp.video);
       setRedTotal(temp.red_fouls+temp.red_endgame+temp.red_teleop+temp.red_auto);
       setBlueTotal(temp.blue_fouls+temp.blue_endgame+temp.blue_teleop+temp.blue_auto);
       setDateCompSetMatch(temp.year+ ": Comp Level " + temp.comp_level.toUpperCase() + " Set " + temp.set_number + " Match " + temp.match_number);
-      
     }
-  }, [isLoading, index])
+  }, [isLoading, index, data])
 
   const displayData = (index) => {
-    console.log(data);
     let temp = data[index];
-    console.log(temp);
     return (
       <>
       <tr className={redTotal>blueTotal ? "won red" : 'red'} >
@@ -67,7 +71,7 @@ function App() {
         <th>{isLoading ? "Loading..." : temp.red_fouls}</th>
         <th>{isLoading ? "Loading..." : redTotal}</th>
         <th>{isLoading ? "Loading..." : temp.red_epa_sum}</th>
-        <th>{isLoading ? "Loading..." : temp.red_dq ? "Yes" : "No"}</th>
+        <th>{isLoading ? "Loading..." : temp.red_dq ? temp.red_dq : "None"}</th>
       </tr>
       <tr className={redTotal<blueTotal ? "won blue" : 'blue'}>
         <th>Team Blue</th>
@@ -77,25 +81,27 @@ function App() {
         <th>{isLoading ? "Loading..." : temp.blue_fouls}</th>
         <th>{isLoading ? "Loading..." : blueTotal}</th>
         <th>{isLoading ? "Loading..." : temp.blue_epa_sum}</th>
-        <th>{isLoading ? "Loading..." : temp.blue_dq ? "Yes" : "No"}</th>
+        <th>{isLoading ? "Loading..." : temp.blue_dq ? temp.blue_dq : "None"}</th>
       </tr>
       </>
     )
   }
 
   return (
+    
     <div>
+      <h1>{eventCode}</h1>
       <form onSubmit={(e)=> {
         e.preventDefault();
         setText("");
         getData();
         
       }} style={{display: 'flex', justifyContent: 'center', marginTop: 20}}>
-        <input placeholder="Enter event code" value={text} onChange={handleChange}>
-        </input>
+        <input placeholder="Enter event code" value={text} onChange={handleChange} style={mistake ? {borderColor: 'red'} : {}}/>
         <button type="submit">Enter</button>
       </form>
-      {isEntered ?
+      {mistake ? <p style={{display: 'flex', justifyContent: 'center'}}>Invalid event key, try again.</p> : ''}
+      {isEntered && !mistake ?
       <>
       <h1 style={{display: 'flex', justifyContent: 'center'}}>{dateCompSetMatch}</h1>
       <div className="flex">
