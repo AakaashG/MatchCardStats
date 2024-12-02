@@ -7,3 +7,12 @@ th {
   height: 50px;
   border: 1px solid black;
 }
+tr.blue, th.blue{
+  background-color: rgb(193, 234, 248);
+}
+tr.red, th.red{
+  background-color: #f6abae;
+}
+table tr.won th {
+  border: 5px solid rgb(0, 255, 102);
+}
