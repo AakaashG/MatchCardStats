@@ -1,6 +1,6 @@
 import './App.css';
 import React, {useState, useEffect} from 'react';
-import YouTube from 'react-youtube';
+import ReactPlayer from 'react-player';
 
 function App() {
   const [eventCode, setEventCode] = useState("fgdfgd");
@@ -11,7 +11,7 @@ function App() {
   const [index, setIndex] = useState(0);
   const [redTotal, setRedTotal] = useState(0);
   const [blueTotal, setBlueTotal] = useState(0);
-  const [dateLoc, setDateLoc] = useState('');
+  const [dateCompSetMatch, setDateCompSetMatch] = useState('');
   const [link, setLink] = useState();
   
 
@@ -45,10 +45,11 @@ function App() {
   useEffect (() => {
     if (!isLoading) {
       let temp = data[index];
+      setLink(temp.video);
       setRedTotal(temp.red_fouls+temp.red_endgame+temp.red_teleop+temp.red_auto);
       setBlueTotal(temp.blue_fouls+temp.blue_endgame+temp.blue_teleop+temp.blue_auto);
-      setDateLoc(temp.year+ ": Match #" + temp.match_number);
-      setLink(temp.video)
+      setDateCompSetMatch(temp.year+ ": Comp Level " + temp.comp_level.toUpperCase() + " Set " + temp.set_number + " Match " + temp.match_number);
+      
     }
   }, [isLoading, index])
 
@@ -65,6 +66,8 @@ function App() {
         <th>{isLoading ? "Loading..." : temp.red_endgame}</th>
         <th>{isLoading ? "Loading..." : temp.red_fouls}</th>
         <th>{isLoading ? "Loading..." : redTotal}</th>
+        <th>{isLoading ? "Loading..." : temp.red_epa_sum}</th>
+        <th>{isLoading ? "Loading..." : temp.red_dq ? "Yes" : "No"}</th>
       </tr>
       <tr className={redTotal<blueTotal ? "won blue" : 'blue'}>
         <th>Team Blue</th>
@@ -73,6 +76,8 @@ function App() {
         <th>{isLoading ? "Loading..." : temp.blue_endgame}</th>
         <th>{isLoading ? "Loading..." : temp.blue_fouls}</th>
         <th>{isLoading ? "Loading..." : blueTotal}</th>
+        <th>{isLoading ? "Loading..." : temp.blue_epa_sum}</th>
+        <th>{isLoading ? "Loading..." : temp.blue_dq ? "Yes" : "No"}</th>
       </tr>
       </>
     )
@@ -92,7 +97,7 @@ function App() {
       </form>
       {isEntered ?
       <>
-      <h1 style={{display: 'flex', justifyContent: 'center'}}>{dateLoc}</h1>
+      <h1 style={{display: 'flex', justifyContent: 'center'}}>{dateCompSetMatch}</h1>
       <div className="flex">
         <button 
         onClick={handleClick} 
@@ -105,21 +110,21 @@ function App() {
             <th>Auto Score</th>
             <th>Teleop Score</th>
             <th>Endgame Score</th>
-            <th>Fouls</th>
+            <th>Penalty</th>
             <th>Total Score</th>
             <th>Net EPA</th>
-            <th>Alliance</th>
+            <th>Disqualified</th>
           </tr>
           <tbody>{displayData(index)}</tbody>
         </table>
         <button 
         onClick={handleClick} 
         value={1}
-        disabled={index === data.length ? true : false}
+        disabled={index === data.length-1 ? true : false}
         > right </button>
         </div>
-        <div className="flex" style={{marginTop: 50}}>
-        <table>
+        <div className="flex" style={{marginTop: 15}}>
+        <table style={{marginRight: 20}}>
         <tr>
           <th className='red'>{isLoading ? "Loading..." : "Red Team"}</th>
           <th className='blue'>{isLoading ? "Loading..." : "Blue Team"}</th>
@@ -137,7 +142,7 @@ function App() {
           <th className='blue'>{isLoading ? "Loading..." : data[index].blue_3}</th>
         </tr>
       </table>
-      <YouTube videoId={link} />
+      <ReactPlayer url={"https://www.youtube.com/watch?v="+link} />
       </div>
       </>
       : ""}
